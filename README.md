@@ -131,3 +131,8 @@ Punkteformel, Gegnerliste …). Läuft `npm run dev`, übernimmt Vite jede
 - **Maus/Touch:** Aktion wählen, dann Karte anklicken
 - **Tastatur:** `A` = Angriff, `B` = Block, `H` = Heilung,
   `1`–`9` spielt die jeweilige Handkarte, `Tab`/`Enter` funktioniert überall
+
+## Lizenz
+
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE) – frei nutzbar,
+veränderbar und weitergebbar, solange der Copyright-Vermerk erhalten bleibt.
