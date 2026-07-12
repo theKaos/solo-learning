@@ -1,0 +1,3 @@
+# Abhängigkeiten und Build-Ergebnis nicht einchecken
+node_modules/
+dist/

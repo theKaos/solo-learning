@@ -1,0 +1,45 @@
+SOLO JAPANISCH LEARNING – Anime-Hintergrundbilder
+=======================================
+
+Lege in diesen Ordner bis zu 10 Hintergrundbilder mit diesen Namen:
+
+  bg01.jpg   bg02.jpg   bg03.jpg   ...   bg10.jpg
+  (oder .png – beides funktioniert)
+
+Bei jedem Seitenaufruf wählt das Spiel zufällig eines davon.
+Es müssen NICHT alle 10 Slots gefüllt sein – fehlende Slots werden
+übersprungen. Liegt hier gar kein Bild, zeigt das Spiel automatisch
+den dunklen System-Hintergrund (Solo-Leveling-Look).
+
+Empfehlung: Querformat, mindestens 1920 Pixel breit, OHNE Charaktere.
+
+
+Kostenlose, legale Quellen (ohne Charaktere, Anime-Stil)
+--------------------------------------------------------
+
+1) "Free Visual Novel Backgrounds – School Mini Pack 1" von Potat0Master
+   https://potat0master.itch.io/free-visual-novel-backgrounds-school-mini-pack-1
+   → 106 kostenlose Schul-Szenen (Klassenzimmer, Flur, Dach, Eingang,
+     Treppen, Clubraum) in Tag/Abend/Nacht. Royalty-frei, auch
+     kommerziell nutzbar, Namensnennung optional.
+   → Passt PERFEKT zum Schul-Thema des Spiels!
+
+2) "Anime Backgrounds" von Noraneko Games
+   https://noranekogames.itch.io/yumebackground
+   → Straßen, Schreine, Wohnungen, Züge, Schulen, Städte.
+     Kostenlos ("name your own price").
+   → WICHTIG: Namensnennung "Noraneko Games" erforderlich –
+     z. B. unten im README oder auf dem Startbildschirm erwähnen.
+
+3) Weitere freie Pakete: https://itch.io/game-assets/free/genre-visual-novel/tag-backgrounds
+
+So geht's:
+  1. Pack herunterladen und entpacken
+  2. 10 Lieblingsbilder aussuchen (z. B. Klassenzimmer, Flur,
+     Schulhof, Dach, Straße, Bahnhof …)
+  3. In diesen Ordner kopieren und umbenennen in bg01.jpg … bg10.jpg
+  4. Spiel neu laden – fertig!
+
+Hinweis: Bilder aus der Google-Bildersuche sind meist urheberrechtlich
+geschützt und dürfen nicht einfach verwendet werden – die Quellen oben
+sind ausdrücklich zur freien Nutzung freigegeben.
