@@ -15,7 +15,7 @@ export default function RewardScreen() {
                     `${card.value} Punkte – einsetzbar als Angriff, Block oder Heilung.`
                   }>
             <span className={`card-word ${wordSizeClass(card.jp)}`} lang="ja">{card.jp}</span>
-            <span className="card-points">✦ <span className="points-value">{card.value}</span> Punkte</span>
+            <span className="card-points">✦ <span className="points-value">{card.value}</span></span>
             <span className="card-meaning">{card.reading} · {card.de}</span>
           </button>
         ))}

@@ -11,7 +11,8 @@ export default function StudyScreen() {
       <p className="study-hint">
         Das System überträgt dir neue Wörter – sie erwarten dich in der nächsten
         Begegnung. Nimm dir einen Moment: Ein Untertitel auf der Karte hilft dir,
-        bis das Wort sitzt (3× richtig gespielt).
+        bis das Wort wirklich sitzt – und was du sicher kannst, kehrt nach ein
+        paar Tagen zur Wiederholung zurück, bevor du es vergisst.
       </p>
       <ul id="study-list" className="study-list">
         {game.studyWords.map((w) => {

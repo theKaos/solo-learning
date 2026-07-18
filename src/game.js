@@ -18,7 +18,17 @@
 /* ---------- 1. Balance-Werte ---------- */
 export const PLAYER_MAX_HP  = 50;
 export const TOTAL_FIGHTS   = 8;   // 7 Begegnungen + Abschlussprüfung
-export const MASTERY_GOAL   = 3;   // so oft richtig, bis ein Wort "gemeistert" ist
+
+/* ---------- Zeit-Wiederholung (Leitner-System) ----------
+   Jedes Wort hat eine Stufe (Box 0–5). Richtige Antwort → eine Stufe
+   hoch, Fehler → zwei Stufen runter. Jede Stufe hat eine WARTEZEIT:
+   Erst wenn sie abgelaufen ist, gilt das Wort wieder als "fällig" und
+   wird bevorzugt ins Spiel gemischt – genau dann, wenn das Gehirn es
+   zu vergessen droht. Ab Stufe 3 gilt ein Wort als gemeistert
+   (Karten-Hilfe verschwindet); fällt es zurück, kehrt die Hilfe zurück. */
+export const MASTERY_BOX = 3;
+const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30]; // Wartezeit je Stufe
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const HAND_SIZE      = 5;
 const HEAL_AFTER_WIN = 12;         // automatische Heilung nach jedem Sieg
@@ -50,6 +60,10 @@ const KANA_STROKES = {
 
 function wordPoints(word) {
   const jp = word.jp;
+  // Kanji-Einträge bringen ihre Strichzahl direkt mit (siehe decks.js)
+  if (word.strokes) {
+    return Math.min(4 + word.strokes, 12);
+  }
   if (jp.length === 1) {
     return 4 + (KANA_STROKES[jp] || 2);
   }
@@ -59,16 +73,26 @@ function wordPoints(word) {
   return Math.min(pts, 12);
 }
 
-/* ---------- 2. Begegnungen im Schultag ---------- */
+/* ---------- 2. Begegnungen im Schultag ----------
+   Jede Begegnung hat einen eigenen TWIST – eine kleine Sonderregel,
+   damit sich keine Stunde wie die vorherige spielt (Anti-Monotonie). */
 const ENEMIES = [
-  { name: "Der Wecker",            sprite: "⏰", hp: 15, atk: 4, boss: false },
-  { name: "Sitznachbar Kenta",     sprite: "🙋", hp: 18, atk: 4, boss: false },
-  { name: "Klassensprecherin Yui", sprite: "📢", hp: 22, atk: 5, boss: false },
-  { name: "Pausen-Ansturm",        sprite: "🍞", hp: 26, atk: 5, boss: false },
-  { name: "Oni-Sensei (Sport)",    sprite: "🏋️", hp: 28, atk: 6, boss: false },
-  { name: "Überraschungs-Quiz",    sprite: "📝", hp: 31, atk: 6, boss: false },
-  { name: "Karaoke mit dem Club",  sprite: "🎤", hp: 32, atk: 7, boss: false },
-  { name: "DIE KANJI-PRÜFUNG",     sprite: "📋", hp: 38, atk: 8, boss: true  }
+  { name: "Der Wecker",            sprite: "⏰", hp: 15, atk: 4, boss: false,
+    twist: "snooze",   twistText: "Snooze: Jede 3. Attacke fällt aus – dafür döst er sich um +3 LP hoch." },
+  { name: "Sitznachbar Kenta",     sprite: "🙋", hp: 18, atk: 4, boss: false,
+    twist: "none",     twistText: "Freundlich: keine Sonderregel. Wärm dich auf!" },
+  { name: "Klassensprecherin Yui", sprite: "📢", hp: 22, atk: 5, boss: false,
+    twist: "escalate", twistText: "Durchsage: Mit jeder Attacke wird sie lauter (+1 Schaden, max. +3)." },
+  { name: "Pausen-Ansturm",        sprite: "🍞", hp: 26, atk: 5, boss: false,
+    twist: "crowd",    twistText: "Gedränge: Du hältst 7 Karten – mehr Auswahl, mehr Ablenkung." },
+  { name: "Oni-Sensei (Sport)",    sprite: "🏋️", hp: 28, atk: 6, boss: false,
+    twist: "drill",    twistText: "Ausdauer-Drill: Heilung wirkt nur halb. Beiß dich durch!" },
+  { name: "Überraschungs-Quiz",    sprite: "📝", hp: 33, atk: 6, boss: false,
+    twist: "fleiss",   twistText: "Fleißaufgabe: Richtige Antworten zählen DOPPELT für deine Serie – aber ein Fehler wirft sie wie immer auf null." },
+  { name: "Karaoke mit dem Club",  sprite: "🎤", hp: 32, atk: 7, boss: false,
+    twist: "rhythm",   twistText: "Rhythmus: Kombo-Bonus verdoppelt – aber Patzer kosten dich 2 LP extra (Buh-Rufe)." },
+  { name: "DIE KANJI-PRÜFUNG",     sprite: "📋", hp: 38, atk: 8, boss: true,
+    twist: "exam",     twistText: "Alles kommt dran: Bedeutung und Lesung wechseln sich ab – Hilfen flackern weg." }
 ];
 
 /* ---------- 3. Speichern & Laden ---------- */
@@ -81,7 +105,7 @@ function loadSave() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) return JSON.parse(raw);
   } catch (e) { /* beschädigte Daten? Dann frisch starten */ }
-  return { runs: 0, wins: 0, wordStats: {} };
+  return { runs: 0, wins: 0, bestScore: 0, wordStats: {} };
 }
 
 function persistSave() {
@@ -94,12 +118,31 @@ export const save = loadSave();
 
 export function wordStat(deckId, jp) {
   if (!save.wordStats[deckId]) save.wordStats[deckId] = {};
-  if (!save.wordStats[deckId][jp]) save.wordStats[deckId][jp] = { right: 0, wrong: 0, intro: false };
-  return save.wordStats[deckId][jp];
+  if (!save.wordStats[deckId][jp]) {
+    save.wordStats[deckId][jp] = { right: 0, wrong: 0, intro: false, box: 0, due: 0 };
+  }
+  const s = save.wordStats[deckId][jp];
+  if (s.box === undefined) { s.box = 0; s.due = 0; } // alte Spielstände nachrüsten
+  return s;
+}
+
+// Ist die Wartezeit dieses Wortes abgelaufen?
+function isDueStat(s) {
+  return s.intro && (s.due || 0) <= Date.now();
 }
 
 export function isMastered(jp) {
-  return wordStat(game.learningDeck.id, jp).right >= MASTERY_GOAL;
+  return wordStat(game.learningDeck.id, jp).box >= MASTERY_BOX;
+}
+
+/* Wie viele Wörter eines Decks sind heute zur Wiederholung fällig? */
+export function deckDueCount(deck) {
+  const stats = save.wordStats[deck.id];
+  if (!stats) return 0;
+  return deck.words.filter((w) => {
+    const s = stats[w.jp];
+    return s && s.intro && (s.due || 0) <= Date.now() && s.box > 0;
+  }).length;
 }
 
 /* ---------- 4. Spielzustand ---------- */
@@ -119,14 +162,35 @@ export const game = {
   enemy: null,
   turn: 0,
   hitFlash: 0,         // zählt Treffer hoch → startet die Wackel-Animation neu
+  shakeId: 0,          // zählt hoch, wenn DU getroffen wirst → Screen-Shake
+  enemyFx: null,       // schwebende Zahl über dem Gegner  { id, text, kind }
+  playerFx: null,      // schwebende Zahl beim Spieler     { id, text, kind }
+  mastery: null,       // Feier-Moment: Wort gemeistert    { id, jp, reading }
+  playAnim: null,      // Ausspiel-Inszenierung: { id, card, correct, meaning }
+  hintsHidden: false,  // Twist "reverse"/"exam": Karten-Hilfen ausgeblendet
   log: { text: "", kind: "" },
   studyWords: [],      // neue Wörter für den Lern-Moment
   rewardCards: [],     // Kartenangebote nach einem Sieg
   rewardHealText: "",
-  stats: { right: 0, wrong: 0, wrongWords: [] },
+  stats: { right: 0, wrong: 0, maxStreak: 0, wrongWords: [] },
+  score: 0,
   won: false,
   locked: false
 };
+
+/* Schwebende Effekt-Zahlen (Game-Feel): kleine Ereignisse,
+   die die React-Seite als Animation über den Panels anzeigt */
+let nextFxId = 1;
+function showEnemyFx(text, kind)  { game.enemyFx  = { id: nextFxId++, text, kind }; }
+function showPlayerFx(text, kind) { game.playerFx = { id: nextFxId++, text, kind }; }
+
+/* Kombo-Bonus: Ab 3 Treffern in Folge wird jede richtige Karte stärker.
+   Beim Karaoke-Twist ("rhythm") zählt der Bonus doppelt. */
+export function comboBonus() {
+  let bonus = game.streak >= 5 ? 2 : game.streak >= 3 ? 1 : 0;
+  if (game.enemy && game.enemy.twist === "rhythm") bonus *= 2;
+  return bonus;
+}
 
 // Die React-Seite registriert hier ihre Neuzeichnen-Funktion
 let refresh = () => {};
@@ -156,40 +220,47 @@ function setLog(text, kind) {
   game.log = { text, kind: kind || "" };
 }
 
-/* Wortauswahl fürs Startdeck: Wiederholung zuerst, dann Neues in
-   Lern-Reihenfolge, dann das am wenigsten Geübte. */
+/* Wortauswahl fürs Startdeck: FÄLLIGE Wörter zuerst (Zeit-Wiederholung!),
+   dann Neues in Lern-Reihenfolge, dann das am wenigsten Geübte. */
 function pickStartingWords(count) {
   const all = game.learningDeck.words;
   const st = (w) => wordStat(game.learningDeck.id, w.jp);
 
-  const review = shuffle(all.filter((w) => st(w).wrong > 0 && !isMastered(w.jp)))
-    .slice(0, Math.floor(count / 2));
-  const chosen = [...review];
+  // 1. Fällig: Wartezeit abgelaufen → jetzt wiederholen, sonst vergessen!
+  const due = shuffle(all.filter((w) => isDueStat(st(w))))
+    .slice(0, Math.ceil(count / 2));
+  const chosen = [...due];
 
+  // 2. Neu: noch nie vorgestellte Wörter in Lern-Reihenfolge
   for (const w of all) {
     if (chosen.length >= count) break;
     if (!st(w).intro && !chosen.includes(w)) chosen.push(w);
   }
+  // 3. Auffüllen mit den unsichersten Wörtern (niedrigste Stufe)
   if (chosen.length < count) {
     const rest = all.filter((w) => !chosen.includes(w))
-      .sort((a, b) => st(a).right - st(b).right);
+      .sort((a, b) => st(a).box - st(b).box);
     chosen.push(...rest.slice(0, count - chosen.length));
   }
   return shuffle(chosen);
 }
 
-/* Belohnungen: zwei neue Wörter + ein Wiederholungs-Kandidat */
+/* Belohnungen: erst ein fälliges Wort, dann Neues in Lern-Reihenfolge */
 function pickRewardWords(count) {
   const all = game.learningDeck.words;
   const st = (w) => wordStat(game.learningDeck.id, w.jp);
   const inDeck = new Set(game.deck.map((c) => c.jp));
   const pool = all.filter((w) => !inDeck.has(w.jp));
 
-  const chosen = pool.filter((w) => !st(w).intro).slice(0, count - 1);
+  const chosen = shuffle(pool.filter((w) => isDueStat(st(w)))).slice(0, 1);
+  for (const w of pool) {
+    if (chosen.length >= count) break;
+    if (!st(w).intro && !chosen.includes(w)) chosen.push(w);
+  }
   const rest = shuffle(pool.filter((w) => !chosen.includes(w)))
-    .sort((a, b) => (st(b).wrong - st(b).right) - (st(a).wrong - st(a).right));
+    .sort((a, b) => st(a).box - st(b).box);
   chosen.push(...rest.slice(0, count - chosen.length));
-  return chosen;
+  return chosen.slice(0, count);
 }
 
 /* ---------- 5. Aktionen ---------- */
@@ -197,7 +268,7 @@ export function startRun(learningDeck) {
   game.learningDeck = learningDeck;
   game.playerHp = PLAYER_MAX_HP;
   game.fightIndex = 0;
-  game.stats = { right: 0, wrong: 0, wrongWords: [] };
+  game.stats = { right: 0, wrong: 0, maxStreak: 0, wrongWords: [] };
 
   const words = pickStartingWords(START_WORDS);
   game.deck = Array.from({ length: STARTING_DECK_SIZE }, (_, i) =>
@@ -226,12 +297,20 @@ function showStudy() {
   refresh();
 }
 
+/* Handgröße dieser Begegnung – der Gedränge-Twist erhöht sie */
+function handSize() {
+  return game.enemy && game.enemy.twist === "crowd" ? 7 : HAND_SIZE;
+}
+
 export function startBattle() {
   const base = ENEMIES[game.fightIndex];
-  game.enemy = { ...base, maxHp: base.hp };
+  game.enemy = { ...base, maxHp: base.hp, rampBonus: 0 };
   game.turn = 1;
   game.block = 0;
   game.streak = 0;
+  game.enemyFx = null;
+  game.playerFx = null;
+  game.mastery = null;
   game.drawPile = shuffle([...game.deck]);
   game.discardPile = [];
   game.hand = [];
@@ -241,7 +320,7 @@ export function startBattle() {
     ? "[SYSTEM] Finale Quest: Die Kanji-Prüfung beginnt. Zeig, was du gelernt hast!"
     : `[SYSTEM] Neue Begegnung: ${base.name}!`, "info");
 
-  drawCards(HAND_SIZE);
+  drawCards(handSize());
   newTask();
   game.screen = "battle";
   refresh();
@@ -259,13 +338,16 @@ function drawCards(n) {
 }
 
 /* Neue Aufgabe: Zielwort ist IMMER eines aus der Hand,
-   Fehler-Wörter werden bevorzugt abgefragt. */
+   Fehler-Wörter werden bevorzugt abgefragt.
+   Die Twists "reverse" und "exam" drehen die Fragerichtung um
+   bzw. blenden die Karten-Hilfen aus. */
 function newTask() {
   if (game.hand.length === 0) { game.task = null; return; }
 
   const weighted = game.hand.map((card) => {
     const s = wordStat(game.learningDeck.id, card.jp);
-    return { card, weight: 1 + s.wrong * 2 };
+    // Fehler-Wörter und fällige Wörter werden bevorzugt abgefragt
+    return { card, weight: 1 + s.wrong * 2 + (isDueStat(s) ? 2 : 0) };
   });
   const total = weighted.reduce((sum, e) => sum + e.weight, 0);
   let r = Math.random() * total;
@@ -275,39 +357,116 @@ function newTask() {
     r -= e.weight;
   }
 
-  const isReading = game.learningDeck.promptType === "reading";
+  const deckIsReading = game.learningDeck.promptType === "reading";
+  const twist = game.enemy ? game.enemy.twist : "none";
+
+  // Fragerichtung dieser Aufgabe bestimmen
+  let askReading = deckIsReading;
+  game.hintsHidden = false;
+
+  if (twist === "exam") {
+    if (deckIsReading) {
+      game.hintsHidden = game.turn % 2 === 0;  // Hilfen flackern jede 2. Runde weg
+    } else {
+      askReading = game.turn % 2 === 0;        // Bedeutung und Lesung im Wechsel
+    }
+  }
+
   game.task = {
     jp: target.jp,
-    promptWord: isReading ? target.reading : target.de,
-    isReading
+    promptWord: askReading ? target.reading : target.de,
+    isReading: askReading
   };
 }
 
-/* Ein Spielerzug: EINE Karte spielen, danach agiert der Gegner */
+/* Ein Spielerzug: EINE Karte spielen, danach agiert der Gegner.
+   Zwischen Klick und Wirkung liegt die Ausspiel-Inszenierung:
+   Die Karte fliegt vergrößert in die Bildschirmmitte – bei richtiger
+   Antwort glänzt sie golden und verpufft, bei falscher färbt sie
+   sich rot, zerbröckelt, und die Bedeutung wird sofort eingeblendet. */
 export function playCard(index) {
   if (game.locked) return;
   const card = game.hand[index];
   if (!card || !game.task) return;
 
-  game.hand.splice(index, 1);
-  game.discardPile.push(card);
+  // Richtig ist die Karte, deren Wort zur Frage passt – bei Wörtern mit
+  // gleicher Lesung/Bedeutung zählt jede semantisch passende Karte
+  const correct = card.jp === game.task.jp ||
+    (game.task.isReading
+      ? card.reading === game.task.promptWord
+      : card.de === game.task.promptWord);
+
+  game.locked = true;
+  game.playAnim = {
+    id: nextFxId++,
+    card,
+    correct,
+    meaning: `${card.jp} (${card.reading}) heißt „${card.de}“`
+  };
+  refresh();
+
+  // Richtig: Nach der Gold-Animation löst der Zug automatisch auf.
+  // Falsch: Die Erklärung BLEIBT STEHEN, bis der Spieler sie über
+  // den Weiter-Button schließt (dismissMeaning).
+  if (correct) {
+    setTimeout(() => resolvePlay(card, correct), 1200);
+  }
+}
+
+/* Der Spieler hat die Erklärung der falschen Karte gelesen
+   und schließt sie – erst jetzt geht der Zug weiter. */
+export function dismissMeaning() {
+  if (!game.playAnim || game.playAnim.correct) return;
+  resolvePlay(game.playAnim.card, false);
+}
+
+function resolvePlay(card, correct) {
+  game.playAnim = null;
+  const idx = game.hand.indexOf(card);
+  if (idx >= 0) {
+    game.hand.splice(idx, 1);
+    game.discardPile.push(card);
+  }
 
   const stat = wordStat(game.learningDeck.id, card.jp);
-  const correct = card.jp === game.task.jp;
 
   if (correct) {
     stat.right++;
     game.stats.right++;
-    game.streak++;
+    // Fleißaufgabe (Überraschungs-Quiz): richtige Antworten zählen
+    // doppelt für die Serie – im Quiz zu glänzen lohnt sich!
+    game.streak += game.enemy.twist === "fleiss" ? 2 : 1;
+    game.stats.maxStreak = Math.max(game.stats.maxStreak, game.streak);
+
+    // Leitner: eine Stufe hoch, neue Wartezeit starten
+    const wasBelow = stat.box < MASTERY_BOX;
+    stat.box = Math.min(5, stat.box + 1);
+    stat.due = Date.now() + BOX_INTERVALS_DAYS[stat.box] * DAY_MS;
     applyEffect(card);
+
+    // Feier-Moment: Das Wort hat gerade die Meister-Stufe erreicht!
+    if (wasBelow && stat.box >= MASTERY_BOX) {
+      game.mastery = { id: nextFxId++, jp: card.jp, reading: card.reading };
+    }
   } else {
     stat.wrong++;
     game.stats.wrong++;
     game.streak = 0;
+    // Leitner: zwei Stufen zurück und sofort wieder fällig
+    stat.box = Math.max(0, stat.box - 2);
+    stat.due = 0;
     if (!game.stats.wrongWords.some((w) => w.jp === card.jp)) {
       game.stats.wrongWords.push({ jp: card.jp, reading: card.reading, de: card.de });
     }
-    setLog(`Daneben! ${card.jp} (${card.reading}) heißt „${card.de}“. Die Karte verpufft.`, "fail");
+    let failText = `Daneben! ${card.jp} (${card.reading}) heißt „${card.de}“. Die Karte verpufft.`;
+    showPlayerFx("✖ verpufft", "fizzle");
+    // Karaoke-Twist: Buh-Rufe bei Fehlern
+    if (game.enemy.twist === "rhythm") {
+      game.playerHp = Math.max(0, game.playerHp - 2);
+      game.shakeId++;
+      failText += " Buh-Rufe: −2 LP!";
+    }
+    setLog(failText, "fail");
   }
   persistSave();
 
@@ -323,16 +482,25 @@ export function playCard(index) {
 
 function applyEffect(card) {
   const word = `${card.jp} (${card.reading}) = „${card.de}“`;
+  const bonus = comboBonus();
+  const bonusText = bonus > 0 ? ` (+${bonus} Kombo)` : "";
+  let value = card.value + bonus;
+
   if (game.mode === "attack") {
-    game.enemy.hp = Math.max(0, game.enemy.hp - card.value);
+    game.enemy.hp = Math.max(0, game.enemy.hp - value);
     game.hitFlash++;
-    setLog(`${word} – Treffer! ${card.value} Schaden.`, "ok");
+    showEnemyFx(`−${value}`, "dmg");
+    setLog(`${word} – Treffer! ${value} Schaden${bonusText}.`, "ok");
   } else if (game.mode === "block") {
-    game.block += card.value;
-    setLog(`${word} – ${card.value} Block aufgebaut!`, "ok");
+    game.block += value;
+    showPlayerFx(`+${value} 🛡️`, "block");
+    setLog(`${word} – ${value} Block aufgebaut${bonusText}!`, "ok");
   } else {
-    game.playerHp = Math.min(PLAYER_MAX_HP, game.playerHp + card.value);
-    setLog(`${word} – ${card.value} LP geheilt!`, "ok");
+    // Ausdauer-Drill: Heilung wirkt nur halb
+    if (game.enemy.twist === "drill") value = Math.ceil(value / 2);
+    game.playerHp = Math.min(PLAYER_MAX_HP, game.playerHp + value);
+    showPlayerFx(`+${value} 💚`, "heal");
+    setLog(`${word} – ${value} LP geheilt${bonusText}!`, "ok");
   }
 }
 
@@ -342,13 +510,18 @@ export function fumbleChance() {
 }
 
 export function enemyDamage() {
-  return game.enemy.atk + Math.floor((game.turn - 1) / 5);
+  return game.enemy.atk + (game.enemy.rampBonus || 0) + Math.floor((game.turn - 1) / 5);
 }
 
 function enemyAct() {
   const e = game.enemy;
 
-  if (Math.random() < fumbleChance()) {
+  if (e.twist === "snooze" && game.turn % 3 === 0) {
+    // Wecker-Twist: Snooze – Attacke fällt aus, er heilt sich
+    e.hp = Math.min(e.maxHp, e.hp + 3);
+    showEnemyFx("+3 💤", "heal");
+    setLog(`${e.name} drückt Snooze und döst kurz weg: +3 LP.`, "info");
+  } else if (Math.random() < fumbleChance()) {
     // Patzer! Ein eventueller Block bleibt stehen.
     setLog(`⚡ Patzer! Dein perfektes Japanisch verblüfft ${e.name} – ` +
       `die Attacke geht komplett daneben!`, "info");
@@ -357,10 +530,20 @@ function enemyAct() {
     const taken = Math.max(0, dmg - game.block);
     game.playerHp = Math.max(0, game.playerHp - taken);
     game.block = 0;
+    if (taken > 0) {
+      showPlayerFx(`−${taken}`, "dmg");
+      game.shakeId++; // Screen-Shake: DU wurdest getroffen
+    } else {
+      showPlayerFx("Block!", "block");
+    }
     setLog(taken > 0
       ? `${e.name} trifft dich für ${taken} Schaden!`
       : `${e.name} greift an – dein Block hält stand!`,
       taken > 0 ? "fail" : "info");
+    // Yui-Twist: Sie wird mit jeder Attacke lauter
+    if (e.twist === "escalate" && (e.rampBonus || 0) < 3) {
+      e.rampBonus = (e.rampBonus || 0) + 1;
+    }
   }
 
   if (game.playerHp <= 0) {
@@ -371,7 +554,7 @@ function enemyAct() {
   }
 
   game.turn++;
-  drawCards(HAND_SIZE - game.hand.length);
+  drawCards(handSize() - game.hand.length);
   newTask();
   game.locked = false;
   refresh();
@@ -409,13 +592,35 @@ function prepareReward() {
 
 export function chooseReward(card) {
   game.deck.push(card);
-  showStudy(); // stellt das neue Wort vor, dann geht's weiter
+
+  // Die neue Karte wird IMMER im Lern-Moment vorgestellt – auch wenn
+  // das Wort in einem früheren Run schon einmal eingeführt wurde.
+  // (Vorher übersprang showStudy() bereits bekannte Wörter, sodass es
+  // direkt in die nächste Runde ging und die Eselsbrücke fehlte.)
+  const s = wordStat(game.learningDeck.id, card.jp);
+  s.intro = true;
+  persistSave();
+
+  game.studyWords = [card];
+  game.screen = "study";
+  refresh();
 }
 
 /* ---------- Ergebnis ---------- */
+/* Run-Score: belohnt richtige Antworten, lange Serien und Fortschritt.
+   Formel: 10 × Richtige + 15 × längste Serie + 25 × Begegnungen + 100 Sieg-Bonus */
+function computeScore(won) {
+  return game.stats.right * 10 +
+         game.stats.maxStreak * 15 +
+         game.fightIndex * 25 +
+         (won ? 100 : 0);
+}
+
 function endRun(won) {
   save.runs++;
   if (won) save.wins++;
+  game.score = computeScore(won);
+  save.bestScore = Math.max(save.bestScore || 0, game.score);
   persistSave();
   game.won = won;
   game.screen = "result";

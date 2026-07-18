@@ -554,15 +554,16 @@ body { text-shadow: 0 1px 4px rgba(4, 12, 30, 0.6); }
   text-shadow: 0 0 8px rgba(255, 209, 102, 0.35);
 }
 
-/* Punktewert der Karte */
+/* Punktewert der Karte: linksbündig, nur Symbol + Zahl */
 .card-points {
+  align-self: flex-start;
+  margin-left: 0.45rem;
   font-size: 0.78rem;
   font-weight: 800;
   color: var(--violet);
   text-shadow: 0 0 10px rgba(139, 123, 255, 0.5);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
-  text-align: center;
+  text-align: left;
 }
 .card-points .points-value { font-size: 1.2rem; }
 
@@ -730,4 +731,280 @@ body { text-shadow: 0 1px 4px rgba(4, 12, 30, 0.6); }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* =========================================================
+   Game-Feel: schwebende Zahlen, Screen-Shake, Feier-Momente
+   ========================================================= */
+
+/* Bezugsrahmen für die schwebenden Effekt-Zahlen */
+.enemy-info, .player-stats { position: relative; }
+
+/* Schwebende Effekt-Zahl: steigt auf und verblasst */
+.fx {
+  position: absolute;
+  top: -0.4rem;
+  right: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 5;
+  animation: fx-float 1s ease-out forwards;
+}
+.fx-dmg    { color: var(--danger); text-shadow: 0 0 12px rgba(255, 91, 106, 0.8); }
+.fx-heal   { color: var(--ok);     text-shadow: 0 0 12px rgba(69, 224, 162, 0.8); }
+.fx-block  { color: #9db4ff;       text-shadow: 0 0 12px rgba(120, 140, 255, 0.8); }
+.fx-fizzle { color: var(--ink-dim); font-size: 1.1rem; }
+
+@keyframes fx-float {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.8); }
+  15%  { opacity: 1; transform: translateY(0) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-34px) scale(1); }
+}
+
+/* Screen-Shake, wenn DU getroffen wirst */
+.shake-wrap { animation: screen-shake 0.35s ease; }
+@keyframes screen-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-7px, 2px); }
+  40% { transform: translate(6px, -3px); }
+  60% { transform: translate(-4px, 2px); }
+  80% { transform: translate(3px, -1px); }
+}
+
+/* Feier-Moment: Wort gemeistert */
+.mastery-pop {
+  position: fixed;
+  top: 18%;
+  left: 50%;
+  z-index: 20;
+  padding: 0.8rem 1.6rem;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  background: rgba(8, 18, 35, 0.92);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 30px rgba(255, 209, 102, 0.45), inset 0 0 24px rgba(255, 209, 102, 0.1);
+  clip-path: var(--notch);
+  pointer-events: none;
+  animation: mastery-in 2s ease forwards;
+}
+.mastery-star {
+  display: inline-block;
+  margin-right: 0.4rem;
+  animation: mastery-spin 0.8s ease;
+}
+@keyframes mastery-in {
+  0%   { opacity: 0; transform: translate(-50%, 14px) scale(0.7); }
+  12%  { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  20%  { transform: translate(-50%, 0) scale(1); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -18px) scale(0.95); }
+}
+@keyframes mastery-spin {
+  from { transform: rotate(-180deg) scale(0.3); }
+  to   { transform: rotate(0) scale(1); }
+}
+
+/* Twist-Zeile im Gegner-Panel */
+.twist-line {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--violet);
+  text-shadow: 0 0 8px rgba(139, 123, 255, 0.4);
+}
+
+/* Kombo-Anzeige in der Intent-Zeile */
+.enemy-intent .combo {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(255, 209, 102, 0.5);
+}
+
+/* Prüfungsmodus: ausgeblendete Karten-Hilfe */
+.card-hint.hint-hidden {
+  color: var(--violet);
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+
+/* Score-Banner auf dem Ergebnisbildschirm */
+.score-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.25rem;
+  padding: 0.7rem 1.2rem;
+  background: rgba(8, 18, 35, 0.86);
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 22px rgba(255, 209, 102, 0.25);
+  clip-path: var(--notch);
+}
+.score-value {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 0 14px rgba(255, 209, 102, 0.5);
+}
+.score-best { color: var(--ink-dim); font-weight: 700; }
+
+/* "Fällig"-Badge auf den Deck-Optionen (Zeit-Wiederholung) */
+.deck-due {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  border: 1px solid rgba(255, 209, 102, 0.55);
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.25);
+  padding: 0.3rem 0.65rem;
+  white-space: nowrap;
+}
+/* wenn das Fällig-Badge da ist, rückt das Level-Badge daneben */
+.deck-due + .deck-level { margin-left: 0.5rem; }
+
+/* =========================================================
+   Kartenfächer & Ausspiel-Inszenierung
+   ========================================================= */
+
+/* Die Hand als Fächer: Karten überlappen, drehen sich zur Mitte
+   und bilden einen Bogen – wie in einer echten Kartenhand */
+.hand {
+  flex-wrap: nowrap;
+  gap: 0;
+  align-items: flex-start;
+  padding-top: 1.6rem;
+  min-height: 225px;
+}
+.fan-card {
+  margin: 0 -16px;
+  transform-origin: 50% 120%;
+  transform: rotate(var(--rot, 0deg)) translateY(var(--drop, 0px));
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+/* Beim Zeigen richtet sich die Karte auf und hebt sich aus dem Fächer */
+.fan-card:hover:not(:disabled), .fan-card:focus-visible:not(:disabled) {
+  transform: rotate(var(--rot, 0deg)) translateY(calc(var(--drop, 0px) - 30px)) scale(1.12);
+  z-index: 40 !important;
+  box-shadow: 0 0 34px rgba(63, 169, 255, 0.55), inset 0 0 28px rgba(63, 169, 255, 0.1);
+}
+.fan-card:disabled:hover { transform: rotate(var(--rot, 0deg)) translateY(var(--drop, 0px)); }
+
+/* Die ausgespielte Karte verschwindet aus der Hand (fliegt im Overlay) */
+.card-ghost { opacity: 0 !important; pointer-events: none; }
+
+/* ---------- Ausspiel-Overlay ---------- */
+.play-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(4, 7, 15, 0.55), transparent 75%);
+}
+
+.play-card {
+  width: 190px;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  background: linear-gradient(165deg, rgba(63, 169, 255, 0.12), transparent 45%), var(--panel-2);
+  border: 2px solid var(--glow-soft);
+  clip-path: var(--notch);
+  box-shadow: 0 0 30px rgba(63, 169, 255, 0.35);
+}
+.play-card .card-word { font-size: 3rem; margin: 0; }
+.play-card .card-word.long { font-size: 2rem; }
+.play-card .card-word.xlong { font-size: 1.5rem; }
+.play-card .card-points { font-size: 1rem; }
+
+/* RICHTIG: hochfliegen → golden aufglänzen → verpuffen */
+.anim-correct {
+  animation: play-correct 1.2s ease forwards;
+}
+@keyframes play-correct {
+  0%   { opacity: 0.9; transform: translateY(42vh) scale(0.5) rotate(6deg); }
+  28%  { opacity: 1;   transform: translateY(0) scale(1) rotate(0deg);
+         border-color: var(--glow-soft);
+         box-shadow: 0 0 30px rgba(63, 169, 255, 0.35); }
+  45%  { transform: scale(1.06);
+         border-color: var(--gold);
+         color: var(--gold);
+         box-shadow: 0 0 60px rgba(255, 209, 102, 0.85), inset 0 0 50px rgba(255, 209, 102, 0.35);
+         filter: brightness(1.25); }
+  70%  { opacity: 1; transform: scale(1.1) rotate(-2deg);
+         border-color: var(--gold);
+         box-shadow: 0 0 80px rgba(255, 209, 102, 0.9), inset 0 0 60px rgba(255, 209, 102, 0.45);
+         filter: brightness(1.6); }
+  100% { opacity: 0; transform: scale(1.9) rotate(2deg);
+         border-color: var(--gold);
+         box-shadow: 0 0 120px rgba(255, 209, 102, 0);
+         filter: brightness(2.2) blur(10px); }
+}
+
+/* FALSCH: hochfliegen → rot anlaufen → zerbröckeln und abstürzen */
+.anim-wrong {
+  animation: play-wrong 1.8s ease forwards;
+}
+@keyframes play-wrong {
+  0%   { opacity: 0.9; transform: translateY(42vh) scale(0.5) rotate(-6deg); }
+  22%  { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  32%  { transform: translateX(-7px) rotate(-2deg);
+         border-color: var(--danger);
+         color: var(--danger);
+         background: linear-gradient(165deg, rgba(255, 91, 106, 0.2), transparent 45%), #2a0d16;
+         box-shadow: 0 0 50px rgba(255, 91, 106, 0.7), inset 0 0 40px rgba(255, 91, 106, 0.3); }
+  40%  { transform: translateX(7px) rotate(2deg); }
+  48%  { transform: translateX(-5px); }
+  56%  { transform: translateX(0) scale(1);
+         clip-path: polygon(12px 0, 55% 6%, 100% 0, 96% 45%, 100% 100%, 60% 94%, 30% 100%, 0 96%, 5% 50%, 0 12px); }
+  75%  { opacity: 1; transform: translateY(24px) rotate(-5deg) scale(0.96);
+         clip-path: polygon(14px 4%, 50% 12%, 92% 2%, 88% 42%, 96% 92%, 55% 86%, 34% 96%, 6% 88%, 10% 48%, 4% 16%); }
+  100% { opacity: 0; transform: translateY(110px) rotate(-12deg) scale(0.85);
+         border-color: var(--danger);
+         filter: blur(3px); }
+}
+
+/* Bedeutung wird bei Fehlern sofort eingeblendet und BLEIBT STEHEN,
+   bis der Spieler sie über den Weiter-Button schließt */
+.play-meaning-box {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.2rem;
+  padding: 1rem 1.6rem 1.2rem;
+  background: rgba(42, 13, 22, 0.96);
+  border: 1px solid var(--danger);
+  box-shadow: 0 0 26px rgba(255, 91, 106, 0.45);
+  clip-path: var(--notch);
+  animation: meaning-in 0.9s ease forwards;
+}
+.play-meaning {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.play-continue { font-size: 0.9rem; padding: 0.6rem 1.3rem; }
+@keyframes meaning-in {
+  0%, 45% { opacity: 0; transform: translateY(10px); }
+  70%     { opacity: 1; transform: translateY(0); }
+  100%    { opacity: 1; }
+}
+
+/* Fächer auf schmalen Bildschirmen: stärker überlappen */
+@media (max-width: 540px) {
+  .fan-card { margin: 0 -24px; }
+  .play-card { width: 150px; min-height: 210px; }
+  .play-card .card-word { font-size: 2.2rem; }
 }

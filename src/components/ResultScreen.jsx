@@ -1,5 +1,5 @@
-/* Ergebnisbildschirm: Sieg oder Niederlage samt Lernstatistik */
-import { game, backToStart } from "../game.js";
+/* Ergebnisbildschirm: Sieg oder Niederlage samt Lernstatistik und Score */
+import { game, save, backToStart } from "../game.js";
 
 export default function ResultScreen() {
   const total = game.stats.right + game.stats.wrong;
@@ -16,6 +16,16 @@ export default function ResultScreen() {
           : "Der Tag hat dich überrollt – aber jedes gelernte Wort bleibt. Morgen klingelt der Wecker erneut!"}
       </p>
 
+      {/* Run-Score: 10×Richtige + 15×längste Serie + 25×Begegnungen + Sieg-Bonus */}
+      <div className="score-banner">
+        <span className="score-value">✦ {game.score} Punkte</span>
+        <span className="score-best">
+          {game.score >= (save.bestScore || 0)
+            ? "Neuer Bestwert!"
+            : `Bestwert: ${save.bestScore}`}
+        </span>
+      </div>
+
       <div id="result-stats" className="result-stats">
         <div className="stat-tile"><span className="stat-value">{game.stats.right}</span>
           <span className="stat-label">Richtig</span></div>
@@ -23,6 +33,8 @@ export default function ResultScreen() {
           <span className="stat-label">Falsch</span></div>
         <div className="stat-tile"><span className="stat-value">{accuracy}%</span>
           <span className="stat-label">Trefferquote</span></div>
+        <div className="stat-tile"><span className="stat-value">{game.stats.maxStreak}</span>
+          <span className="stat-label">Längste Serie</span></div>
         <div className="stat-tile"><span className="stat-value">{game.fightIndex}</span>
           <span className="stat-label">Begegnungen gemeistert</span></div>
       </div>

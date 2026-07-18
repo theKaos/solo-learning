@@ -11,6 +11,7 @@
      reading  → die Lesung in Romaji (Lautschrift)
      de       → die deutsche Bedeutung
      mnemonic → optionale Eselsbrücke (wird im Lern-Moment gezeigt)
+     strokes  → optionale Strichzahl (bestimmt bei Kanji die Punkte)
 
    WICHTIG: Die Reihenfolge der Wörter ist die LERN-Reihenfolge –
    neue Wörter werden von oben nach unten eingeführt. Die Vokabel-
@@ -192,6 +193,62 @@ export const LEARNING_DECKS = [
       { jp: "むずかしい",   reading: "muzukashii", de: "schwierig" },
       { jp: "かんたん",     reading: "kantan",     de: "einfach" },
       { jp: "おもしろい",   reading: "omoshiroi",  de: "interessant / lustig" }
+    ]
+  },
+
+  {
+    id: "kanji-basics",
+    name: "Kanji-Grundzeichen",
+    subtitle: "Die 40 wichtigsten Schriftzeichen",
+    level: "Kanji",
+    glyph: "字",
+    promptType: "meaning",
+    words: [
+      // 1. Zahlen – die einfachsten Kanji zuerst
+      { jp: "一", reading: "ichi",   de: "eins",          strokes: 1,  mnemonic: "Ein einziger Strich – eins." },
+      { jp: "二", reading: "ni",     de: "zwei",          strokes: 2,  mnemonic: "Zwei Striche übereinander – zwei." },
+      { jp: "三", reading: "san",    de: "drei",          strokes: 3,  mnemonic: "Drei Striche – drei. So einfach bleibt es nicht!" },
+      { jp: "四", reading: "yon",    de: "vier",          strokes: 5,  mnemonic: "Ein Fenster mit Gardinen – dahinter verstecken sich vier Ecken." },
+      { jp: "五", reading: "go",     de: "fünf",          strokes: 4,  mnemonic: "Sieht aus wie eine kantige 5 mit Hut." },
+      { jp: "六", reading: "roku",   de: "sechs",         strokes: 4,  mnemonic: "Ein Männchen mit Hut und gespreizten Beinen – rockt die 6." },
+      { jp: "七", reading: "nana",   de: "sieben",        strokes: 2,  mnemonic: "Eine auf den Kopf gestellte 7." },
+      { jp: "八", reading: "hachi",  de: "acht",          strokes: 2,  mnemonic: "Zwei Striche, die auseinandergehen – eine zerbrochene 8." },
+      { jp: "九", reading: "kyuu",   de: "neun",          strokes: 2,  mnemonic: "Ein Haken mit Schwung – gleich ist die 10 erreicht, noch ist es 9." },
+      { jp: "十", reading: "juu",    de: "zehn",          strokes: 2,  mnemonic: "Ein Kreuz – wie die römische Zahl X für 10, nur gerade gestellt." },
+      // 2. Natur – die Wochentags-Kanji
+      { jp: "日", reading: "nichi",  de: "Tag / Sonne",   strokes: 4,  mnemonic: "Ein Fenster, durch das die Sonne scheint." },
+      { jp: "月", reading: "getsu",  de: "Mond / Monat",  strokes: 4,  mnemonic: "Eine Mondsichel mit zwei Streifen Mondlicht." },
+      { jp: "火", reading: "ka",     de: "Feuer",         strokes: 4,  mnemonic: "Ein Mensch, von dem Funken sprühen – Feuer!" },
+      { jp: "水", reading: "sui",    de: "Wasser",        strokes: 4,  mnemonic: "Ein Fluss in der Mitte, links und rechts spritzen Tropfen." },
+      { jp: "木", reading: "moku",   de: "Baum / Holz",   strokes: 4,  mnemonic: "Stamm, zwei Äste, zwei Wurzeln – ein Baum." },
+      { jp: "金", reading: "kin",    de: "Gold / Geld",   strokes: 8,  mnemonic: "Ein Berg mit vergrabenen Goldklumpen darunter." },
+      { jp: "土", reading: "do",     de: "Erde / Boden",  strokes: 3,  mnemonic: "Ein Spross wächst aus dem Boden – Erde." },
+      { jp: "山", reading: "yama",   de: "Berg",          strokes: 3,  mnemonic: "Drei Gipfel nebeneinander – ein Gebirge." },
+      { jp: "川", reading: "kawa",   de: "Fluss",         strokes: 3,  mnemonic: "Drei fließende Wasserläufe – ein Fluss." },
+      { jp: "田", reading: "ta",     de: "Reisfeld",      strokes: 5,  mnemonic: "Ein Feld von oben, ordentlich in vier Parzellen geteilt." },
+      // 3. Mensch & Körper
+      { jp: "人", reading: "hito",   de: "Mensch",        strokes: 2,  mnemonic: "Zwei Beine mitten im Schritt – ein gehender Mensch." },
+      { jp: "口", reading: "kuchi",  de: "Mund",          strokes: 3,  mnemonic: "Ein weit geöffneter Mund." },
+      { jp: "目", reading: "me",     de: "Auge",          strokes: 5,  mnemonic: "Ein hochkant gestelltes Auge mit Pupille in der Mitte." },
+      { jp: "手", reading: "te",     de: "Hand",          strokes: 4,  mnemonic: "Eine Handfläche mit gespreizten Fingern." },
+      { jp: "足", reading: "ashi",   de: "Fuß / Bein",    strokes: 7,  mnemonic: "Oben ein Knie, unten ein Fuß, der gerade losläuft." },
+      // 4. Größe & Richtung
+      { jp: "大", reading: "dai",    de: "groß",          strokes: 3,  mnemonic: "Ein Mensch, der die Arme so weit wie möglich ausbreitet: SO groß!" },
+      { jp: "中", reading: "naka",   de: "Mitte / innen", strokes: 4,  mnemonic: "Ein Strich mitten durch die Box – genau durch die Mitte." },
+      { jp: "小", reading: "shou",   de: "klein",         strokes: 3,  mnemonic: "Etwas ganz Kleines zwischen zwei Splittern." },
+      { jp: "上", reading: "ue",     de: "oben",          strokes: 3,  mnemonic: "Alles zeigt nach oben über die Grundlinie." },
+      { jp: "下", reading: "shita",  de: "unten",         strokes: 3,  mnemonic: "Alles hängt nach unten unter der Linie." },
+      // 5. Alltag
+      { jp: "天", reading: "ten",    de: "Himmel",        strokes: 4,  mnemonic: "Über dem großen Menschen (大) liegt noch eine Ebene: der Himmel." },
+      { jp: "雨", reading: "ame",    de: "Regen",         strokes: 8,  mnemonic: "Ein Fenster, an dem vier Regentropfen herunterlaufen." },
+      { jp: "花", reading: "hana",   de: "Blume",         strokes: 7,  mnemonic: "Oben wächst Gras, darunter verwandelt (化) sich etwas – zur Blume." },
+      { jp: "犬", reading: "inu",    de: "Hund",          strokes: 4,  mnemonic: "Ein großes (大) Tier mit einem Punkt als Ohr – der Hund." },
+      { jp: "車", reading: "kuruma", de: "Auto / Wagen",  strokes: 7,  mnemonic: "Ein Wagen von oben: Achse, Ladefläche, Räder." },
+      { jp: "年", reading: "toshi",  de: "Jahr",          strokes: 6,  mnemonic: "Ein Reisbündel unter dem Dach – die Ernte EINES Jahres." },
+      { jp: "本", reading: "hon",    de: "Buch / Ursprung", strokes: 5, mnemonic: "Ein Baum (木) mit markierter Wurzel – der Ursprung. Aus Holz: Papier, Bücher!" },
+      { jp: "白", reading: "shiro",  de: "weiß",          strokes: 5,  mnemonic: "Die Sonne (日) mit einem Lichtstrahl obendrauf – strahlend weiß." },
+      { jp: "学", reading: "gaku",   de: "lernen",        strokes: 8,  mnemonic: "Ein Kind unter einem Dach mit Funken darüber – hier wird gelernt!" },
+      { jp: "気", reading: "ki",     de: "Energie / Geist", strokes: 6, mnemonic: "Dampf, der von gekochtem Reis aufsteigt – Lebensenergie." }
     ]
   }
 ];

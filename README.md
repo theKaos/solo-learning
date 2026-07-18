@@ -31,23 +31,42 @@ Punkte wirken. Danach ist der Gegner dran: Spieler und Gegner agieren immer
   Gut lernen = Glück erspielen. Eine falsche Antwort setzt die Serie zurück.
 - **Block** bleibt stehen, wenn der Gegner patzt – er wird nur verbraucht,
   wenn er wirklich einen Angriff abfängt.
+- **Begegnungs-Twists:** Jede Schulstunde hat eine eigene Sonderregel –
+  der Wecker snoozed, Yui wird immer lauter, der Pausen-Ansturm gibt dir
+  7 Handkarten, beim Sport wirkt Heilung nur halb, im Quiz zählen
+  richtige Antworten doppelt für die Serie (Fleißaufgabe!), Karaoke
+  verdoppelt den Kombo-Bonus (aber Patzer kosten LP)
+  und die Abschlussprüfung mischt alles. Kein Run spielt sich gleich.
+- **Kombo-Bonus:** Ab 3 richtigen Antworten in Folge wird jede Karte
+  +1 Punkt stärker, ab 5 in Folge +2. Lange Serien lohnen sich doppelt:
+  mehr Patzer-Chance beim Gegner UND stärkere Karten.
+- **Run-Score:** Am Ende zählt eine Wertung (10 × Richtige + 15 × längste
+  Serie + 25 × Begegnungen + Sieg-Bonus) mit gespeichertem Bestwert.
 
 ## Das Lernsystem (auch für absolute Anfänger)
 
 1. **Lern-Moment:** Jedes neue Wort wird vor dem Kampf in Ruhe vorgestellt –
    mit Lesung, Bedeutung und (bei Hiragana) einer Eselsbrücke.
 2. **Untertitel-Hilfe:** Im Kampf steht die volle Lösung klein auf der
-   Karte, bis das Wort **3× richtig** gespielt wurde. Danach bleibt nur
+   Karte, bis das Wort sicher sitzt (Leitner-Stufe 3). Danach bleibt nur
    noch die japanische Lesung (Romaji) stehen – die deutsche Bedeutung
    muss man ab jetzt selbst wissen. (Beim Hiragana-Deck ist die Lesung
-   die Antwort, dort verschwindet die Hilfe komplett.)
+   die Antwort, dort verschwindet die Hilfe komplett.) Fällt ein Wort
+   durch Fehler zurück, kehrt auch die Hilfe zurück.
 3. **Gesprächs-Reihenfolge:** Die Vokabel-Decks sind darauf sortiert,
    möglichst schnell ein einfaches japanisches Gespräch führen zu können:
    erst Begrüßung und Höflichkeit, dann über sich sprechen, Fragewörter,
    „ich verstehe (nicht) / langsamer bitte“, dann Alltag und Smalltalk.
    Beim Hiragana-Deck gilt die Lehrbuch-Reihenfolge (あ, い, う …).
-4. **Spaced Repetition:** Falsch gespielte Wörter tauchen in Aufgaben,
-   Startdecks und Belohnungen bevorzugt wieder auf.
+4. **Echte Zeit-Wiederholung (Leitner-System):** Jedes Wort hat eine
+   Stufe (0–5). Richtig = eine Stufe hoch, Fehler = zwei zurück. Jede
+   Stufe hat eine Wartezeit (1, 3, 7, 14, 30 Tage) – ist sie abgelaufen,
+   gilt das Wort als **fällig** und wird bevorzugt in Startdeck,
+   Belohnungen und Aufgaben zurückgemischt: genau dann, wenn das Gehirn
+   es zu vergessen droht. Der Startbildschirm zeigt, wie viele Wörter
+   heute fällig sind – der ideale Grund für den täglichen Run.
+5. **Kanji-Deck:** 40 Grundzeichen (Zahlen, Natur, Körper, Alltag) mit
+   Eselsbrücken – die Punkteformel nutzt ihre echte Strichzahl.
 
 ## Lokal starten
 
